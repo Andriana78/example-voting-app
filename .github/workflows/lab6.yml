@@ -51,7 +51,17 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
-
+      - name: Test SSH connection
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/azure_key
+          chmod 600 ~/.ssh/azure_key
+          ssh-keygen -y -f ~/.ssh/azure_key > /dev/null
+          ssh -i ~/.ssh/azure_key \
+            -o StrictHostKeyChecking=no \
+            -o BatchMode=yes \
+            ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} \
+            "echo SSH connection successful"
       - name: Copy docker-compose.yml to Azure VM via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
